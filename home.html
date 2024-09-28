@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Management Website</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #eaeaea;
+        }
+        header {
+            background: #2c3e50; /* Darker color */
+            color: white;
+            padding: 15px 0;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        nav {
+            margin: 20px 0;
+        }
+        nav button {
+            background: #34495e; /* Darker blue */
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 0 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background 0.3s;
+            font-size: 16px;
+        }
+        nav button:hover {
+            background: #2c3e50; /* Darker on hover */
+        }
+        #content {
+            padding: 20px;
+            background: white;
+            margin: 20px auto;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            max-width: 800px; /* Max width for better readability */
+        }
+        footer {
+            text-align: center;
+            padding: 10px 0;
+            background: #2c3e50; /* Darker color */
+            color: white;
+            position: relative;
+            bottom: 0;
+            width: 100%;
+        }
+        .cv-container, .lab-container {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        input[type="submit"], .delete-button, .edit-button {
+            background: #27ae60; /* Darker green */
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        input[type="submit"]:hover, .delete-button:hover, .edit-button:hover {
+            background: #219653; /* Darker on hover */
+        }
+        .lab-item {
+            display: inline-block;
+            margin-right: 10px;
+        }
+        .cv-header {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .cv-content {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background: #ecf0f1; /* Light gray */
+        }
+    </style>
+    <script>
+        let cvData = [];
+        let labs = [
+            { title: "Lab 1", data: "Information about Lab 1." },
+            { title: "Lab 2", data: "Information about Lab 2." },
+            { title: "Lab 3", data: "Information about Lab 3." }
+        ];
+
+        function loadPage(page) {
+            const content = document.getElementById('content');
+            if (page === 'home') {
+                content.innerHTML = `
+                    <h2>Home</h2>
+                    <p>Welcome to our management website! Here are the main features:</p>
+                    <ul>
+                        <li>Manage personal information</li>
+                        <li>Access laboratory data</li>
+                        <li>Update and track project progress</li>
+                    </ul>
+                `;
+            } else if (page === 'about') {
+                loadAboutPage();
+            } else if (page === 'labManage') {
+                loadLabManagementPage();
+            } else if (page.startsWith('lab')) {
+                const labIndex = page.replace('lab', '') - 1;
+                loadLabDetail(labIndex);
+            }
+        }
+
+        function loadAboutPage() {
+            const content = document.getElementById('content');
+            content.innerHTML = `
+                <h2>About</h2>
+                <h3>Search CV</h3>
+                <input type="text" id="search-cv" placeholder="Search by name" oninput="searchCV()">
+                <h3>Submit CV</h3>
+                <div class="cv-container">
+                    <form onsubmit="submitCV(event)">
+                        <input type="text" id="cv-name" placeholder="Name" required>
+                        <textarea id="cv" placeholder="CV Content" rows="5" required></textarea>
+                        <input type="submit" value="Submit CV">
+                    </form>
+                </div>
+                <div id="cv-display">${displayCVs()}</div>
+            `;
+        }
+
+        function submitCV(event) {
+            event.preventDefault();
+            const name = document.getElementById('cv-name').value;
+            const content = document.getElementById('cv').value;
+            cvData.push({ name, content });
+
+            document.getElementById('cv-name').value = '';
+            document.getElementById('cv').value = '';
+            document.getElementById('cv-display').innerHTML = displayCVs();
+        }
+
+        function displayCVs(filteredCVs = cvData) {
+            return filteredCVs.map((cv, index) => `
+                <div class="cv-header">CV of ${cv.name}</div>
+                <div class="cv-content">${cv.content}</div>
+                <button class="edit-button" onclick="editCV(${index})">Edit CV</button>
+                <button class="delete-button" onclick="deleteCV(${index})">Delete CV</button>
+            `).join('');
+        }
+
+        function searchCV() {
+            const searchValue = document.getElementById('search-cv').value.toLowerCase();
+            const filteredCVs = cvData.filter(cv => cv.name.toLowerCase().includes(searchValue));
+            document.getElementById('cv-display').innerHTML = displayCVs(filteredCVs);
+        }
+
+        function editCV(index) {
+            const cv = cvData[index];
+            const newName = prompt("Enter new name:", cv.name);
+            const newContent = prompt("Enter new CV content:", cv.content);
+            if (newName) cvData[index].name = newName;
+            if (newContent) cvData[index].content = newContent;
+            document.getElementById('cv-display').innerHTML = displayCVs();
+        }
+
+        function deleteCV(index) {
+            if (confirm("Are you sure you want to delete this CV?")) {
+                cvData.splice(index, 1);
+                document.getElementById('cv-display').innerHTML = displayCVs();
+            }
+        }
+
+        function loadLabManagementPage() {
+            const content = document.getElementById('content');
+            content.innerHTML = `
+                <h2>Lab Management</h2>
+                <div class="lab-container">
+                    <h3>Lab List</h3>
+                    ${labs.map((lab, index) => `
+                        <div class="lab-item">
+                            <button onclick="loadPage('lab${index + 1}')">${lab.title}</button>
+                        </div>
+                    `).join('')}
+                </div>
+                <h3>Add New Lab</h3>
+                <input type="text" id="new-lab-title" placeholder="Lab Title" required>
+                <input type="submit" value="Add Lab" onclick="addLab()">
+            `;
+        }
+
+        function loadLabDetail(index) {
+            const lab = labs[index];
+            const content = document.getElementById('content');
+            content.innerHTML = `
+                <h2>${lab.title}</h2>
+                <p>${lab.data}</p>
+                <button class="edit-button" onclick="editLab(${index})">Edit Lab</button>
+                <button class="delete-button" onclick="deleteLab(${index})">Delete Lab</button>
+                <button onclick="loadPage('labManage')" class="edit-button">Back to Lab Management</button>
+            `;
+        }
+
+        function addLab() {
+            const title = document.getElementById('new-lab-title').value;
+            labs.push({ title, data: "Information about " + title + "." });
+            document.getElementById('new-lab-title').value = '';
+            loadLabManagementPage();
+        }
+
+        function editLab(index) {
+            const lab = labs[index];
+            const newTitle = prompt("Enter new title:", lab.title);
+            const newData = prompt("Enter new content:", lab.data);
+            if (newTitle) labs[index].title = newTitle;
+            if (newData) labs[index].data = newData;
+            loadLabManagementPage();
+        }
+
+        function deleteLab(index) {
+            if (confirm("Are you sure you want to delete this lab?")) {
+                labs.splice(index, 1);
+                loadLabManagementPage();
+            }
+        }
+
+        // Load home page on startup
+        window.onload = function() {
+            loadPage('home');
+        };
+    </script>
+</head>
+<body>
+
+<header>
+    <h1>Management Website</h1>
+    <nav>
+        <button onclick="loadPage('home')">Home</button>
+        <button onclick="loadPage('about')">About</button>
+        <button onclick="loadPage('labManage')">Lab Management</button>
+    </nav>
+</header>
+
+<div id="content"></div>
+
+<footer>
+    <p>© 2024 Management Website. All rights reserved.</p>
+</footer>
+
+</body>
+</html>
